@@ -155,12 +155,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
-  price_class = "PriceClass_200"
+  price_class = "PriceClass_100"
 
   restrictions {
     geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["US", "CA", "GB", "DE"]
+      restriction_type = "none"
     }
   }
 
@@ -168,11 +167,19 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     Environment = "production"
   }
 
+  # Custom error response configuration without a custom page
+custom_error_response {
+  error_code            = 403
+  error_caching_min_ttl = 10
+}
+
+
   viewer_certificate {
-    acm_certificate_arn = "arn:aws:acm:us-east-1:992382451794:certificate/6a065cea-4cfc-49f7-b67a-f819d45eb911"
+    acm_certificate_arn = data.aws_acm_certificate.seehmat_cert.arn
     ssl_support_method  = "sni-only"
   }
 }
+
 
 
 
