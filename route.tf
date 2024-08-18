@@ -1,14 +1,28 @@
 # route53.tf
 
+# Define a variable for the domain name
+variable "domain_name" {
+  description = "The domain name for which to fetch the ACM certificate."
+  type        = string
+  default     = "seehmat.com"  # Adjust as necessary
+}
+
 # Route 53 Hosted Zone
 resource "aws_route53_zone" "seehmat_zone" {
   name = "seehmat.com"
 }
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
 
 # Fetch ACM Certificate ARN dynamically
 data "aws_acm_certificate" "seehmat_cert" {
-  domain   = "seehmat.com"
+  domain   = var.domain_name
   statuses = ["ISSUED"]
+  most_recent = true
+  provider  = aws.us_east_1
+  
 }
 
 # Route 53 A Record (Alias) for Root Domain
@@ -33,7 +47,3 @@ resource "aws_route53_record" "www_subdomain" {
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
 }
 
-# Output the certificate ARN for reference
-output "certificate_arn" {
-  value = data.aws_acm_certificate.seehmat_cert.arn
-}
