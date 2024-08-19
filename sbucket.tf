@@ -1,62 +1,11 @@
-
-# resource "aws_s3_bucket" "bucket1" {
-#   bucket = "ungkbuck"
-
-#   tags = {
-#     Name        = "My bucket"
-#     Environment = "Dev"
-#   }
-# }
-
-
-
-# provider "aws" {
-#   region = "eu-west-1"
-# }
-
 # S3 Bucket for storing website content
-# cloudfront.tf
-
-# S3 Bucket for storing website content
+# This block creates an S3 bucket named "seehmatbuck" where your website content will be stored.
 resource "aws_s3_bucket" "bucket2" {
   bucket = "seehmatbuck"
 }
 
-# Uploading website content to S3 bucket
-resource "aws_s3_object" "object1" {
-  bucket       = aws_s3_bucket.bucket2.bucket
-  key          = "index.html"
-  source       = "C:/Users/hamee/Desktop/example html/index.html"
-  content_type = "text/html"  # Correct MIME type
-}
-
-resource "aws_s3_object" "object2" {
-  bucket       = aws_s3_bucket.bucket2.bucket
-  key          = "styles.css"
-  source       = "C:/Users/hamee/Desktop/example html/styles.css"
-  content_type = "text/css"  # Correct MIME type
-}
-
-resource "aws_s3_object" "object3" {
-  bucket       = aws_s3_bucket.bucket2.bucket
-  key          = "scripts.js"
-  source       = "C:/Users/hamee/Desktop/example html/scripts.js"
-  content_type = "application/javascript"  # Correct MIME type
-}
-
-resource "aws_s3_object" "object4" {
-  bucket = aws_s3_bucket.bucket2.bucket
-  key    = "pexels-thanhhoa-tran-640546-1462892.jpg"
-  source = "C:/Users/hamee/Desktop/example html/pexels-thanhhoa-tran-640546-1462892.jpg"
-}
-
-resource "aws_s3_object" "object5" {
-  bucket = aws_s3_bucket.bucket2.bucket
-  key    = "1716252776052.jpg"
-  source = "C:/Users/hamee/Desktop/example html/1716252776052.jpg"
-}
-
 # S3 Bucket for CloudFront logs
+# This block creates an additional S3 bucket named "seehmatbuck-logs" specifically for storing CloudFront logs.
 resource "aws_s3_bucket" "logs_bucket" {
   bucket = "seehmatbuck-logs"
   
@@ -67,18 +16,22 @@ resource "aws_s3_bucket" "logs_bucket" {
 }
 
 # CloudFront Origin Access Control for securing S3 access
+# This block configures CloudFront to securely access the S3 bucket using SigV4 signing (AWS Signature Version 4).
 resource "aws_cloudfront_origin_access_control" "default" {
   name                           = "S3OriginAccessControl"
   origin_access_control_origin_type = "s3"
   signing_behavior               = "always"
-  signing_protocol                = "sigv4"
+  signing_protocol               = "sigv4"
 }
 
+# Local variable for S3 Origin ID
+# This local variable is used to reference the S3 origin ID in the CloudFront distribution configuration.
 locals {
   s3_origin_id = "myS3Origin"
 }
 
 # CloudFront distribution configuration
+# This block configures a CloudFront distribution to serve content from the S3 bucket to users with optimized performance and security.
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.bucket2.bucket_regional_domain_name
@@ -91,8 +44,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "resumework"
   default_root_object = "index.html"
 
+  # Aliases (custom domain names) for the CloudFront distribution
   aliases = ["seehmat.com"]
 
+  # Default cache behavior configuration
+  # This block defines how CloudFront will cache and deliver the content from the S3 bucket.
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
@@ -112,7 +68,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     max_ttl                = 86400
   }
 
-  # Cache behavior with precedence 0
+  # Additional cache behavior for immutable content (e.g., assets that never change)
   ordered_cache_behavior {
     path_pattern     = "/content/immutable/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -134,7 +90,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
-  # Cache behavior with precedence 1
+  # Cache behavior for other content
   ordered_cache_behavior {
     path_pattern     = "/content/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -155,8 +111,12 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  # Price class configuration for CloudFront distribution
+  # This setting limits the distribution to specific regions to reduce cost.
   price_class = "PriceClass_100"
 
+  # Geo restriction configuration
+  # This block allows or restricts access to the content based on the viewer's geographic location.
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -167,29 +127,18 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     Environment = "production"
   }
 
-  # Custom error response configuration without a custom page
-custom_error_response {
-  error_code            = 403
-  error_caching_min_ttl = 10
-}
+  # Custom error response configuration
+  # This block handles custom error responses, such as returning a specific error page.
+  custom_error_response {
+    error_code            = 403
+    error_caching_min_ttl = 10
+  }
 
-
+  # SSL/TLS certificate configuration
+  # This block configures the SSL/TLS certificate for HTTPS traffic using Amazon's Certificate Manager (ACM).
   viewer_certificate {
     acm_certificate_arn = data.aws_acm_certificate.seehmat_cert.arn
     ssl_support_method  = "sni-only"
   }
 }
-
-
-
-
-# Placeholders Explanation:
-# 1. Bucket name (was "mybucket") is now "seehmatbuck".
-# 2. Tag value (if any) for the bucket can be changed.
-# 3. Origin ID in locals (optional) if a different one is needed.
-# 4. Logging bucket name and prefix in the logging_config block.
-# 5. Aliases for the CloudFront distribution should reflect your actual domain names.
-# 6. Geo-restrictions if you want to modify allowed countries.
-# 7. Tag value for the CloudFront distribution.
-# 8. The ACM certificate ARN reference is linked to your domain certificate for SSL/TLS.
 
