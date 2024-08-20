@@ -1,27 +1,9 @@
-# resource "aws_kms_key" "dnssec_key" {
-#   description             = "KMS key for DNSSEC signing"
-#   deletion_window_in_days = 10
-#   enable_key_rotation     = true
+# kms.tf
+
+# provider "aws" {
+#   alias  = "us"
+#   region = var.aws_us_region
 # }
-
-# resource "aws_kms_alias" "dnssec_key_alias" {
-#   name          = "alias/dnssec-key"
-#   target_key_id = aws_kms_key.dnssec_key.id
-# }
-# Provider for eu-west-1
-
-
-# Provider for eu-west-1 (Ireland)
-provider "aws" {
-  alias  = "eu"
-  region = "eu-west-1"
-}
-
-# Provider for us-east-1 (North Virginia)
-provider "aws" {
-  alias  = "us"
-  region = "us-east-1"
-}
 
 data "aws_caller_identity" "current" {}
 
@@ -85,7 +67,7 @@ resource "aws_kms_key" "dnssec_key" {
 }
 
 resource "aws_route53_key_signing_key" "seehmat_ksk" {
-  hosted_zone_id             = aws_route53_zone.seehmat_zone.zone_id  # Reference the existing zone from route53.tf
+  hosted_zone_id             = var.route53_zone_id  # Reference the existing zone from route53.tf
   key_management_service_arn = aws_kms_key.dnssec_key.arn  
   name                       = "seehmat-ksk"  
 }
