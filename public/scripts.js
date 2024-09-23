@@ -1,7 +1,7 @@
 // Visitor counter code
 document.addEventListener('DOMContentLoaded', async function() {
     // URL of the API Gateway (use the correct URL for your API)
-    const apiUrl = 'https://dtchx90qob.execute-api.eu-west-1.amazonaws.com/dev';
+    const apiUrl = 'https://dtchx90qob.execute-api.eu-west-1.amazonaws.com/dev/counter';
 
     // Function to send a POST request to the API Gateway
     async function incrementVisitorCount() {
