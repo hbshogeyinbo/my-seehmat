@@ -1,17 +1,20 @@
-# kms.tf
-
-# provider "aws" {
-#   alias  = "us"
-#   region = var.aws_us_region
-# }
-
+# Fetch AWS account details
 data "aws_caller_identity" "current" {}
 
-resource "aws_kms_key" "dnssec_key" {  
+# Fetch Route 53 hosted zone dynamically
+data "aws_route53_zone" "selected" {
+   zone_id = var.route53_zone_id
+}
+
+# Create a KMS key for DNSSEC
+resource "aws_kms_key" "dnssec_key" {
+  # Ensure the provider matches the correct region
   provider                = aws.us
   customer_master_key_spec = "ECC_NIST_P256"
   deletion_window_in_days  = 7
   key_usage                = "SIGN_VERIFY"
+
+  # Policy for the KMS key
   policy = jsonencode({
     "Version": "2012-10-17",
     "Id": "dnssec-policy",
@@ -34,7 +37,8 @@ resource "aws_kms_key" "dnssec_key" {
         "Action": [
           "kms:DescribeKey",
           "kms:GetPublicKey",
-          "kms:Sign"
+          "kms:Sign",
+          "kms:CreateGrant"
         ],
         "Resource": "*",
         "Condition": {
@@ -42,7 +46,7 @@ resource "aws_kms_key" "dnssec_key" {
             "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
           },
           "ArnLike": {
-            "aws:SourceArn": "arn:aws:route53:::hostedzone/*"
+            "aws:SourceArn": "arn:aws:route53:::hostedzone/${data.aws_route53_zone.selected.id}"
           }
         }
       },
@@ -66,15 +70,18 @@ resource "aws_kms_key" "dnssec_key" {
   })
 }
 
+# Route 53 Key Signing Key
 resource "aws_route53_key_signing_key" "seehmat_ksk" {
-  hosted_zone_id             = var.route53_zone_id  # Reference the existing zone from route53.tf
-  key_management_service_arn = aws_kms_key.dnssec_key.arn  
-  name                       = "seehmat-ksk"  
+  hosted_zone_id             = var.route53_zone_id
+  key_management_service_arn = aws_kms_key.dnssec_key.arn
+  name                       = "seehmat-ksk"
 }
 
-resource "aws_route53_hosted_zone_dnssec" "seehmat_dnssec" {  
-  depends_on = [
-    aws_route53_key_signing_key.seehmat_ksk  
-  ]
-  hosted_zone_id = aws_route53_key_signing_key.seehmat_ksk.hosted_zone_id
+# Enable DNSSEC for the hosted zone
+resource "aws_route53_hosted_zone_dnssec" "seehmat_dnssec" {
+  depends_on     = [aws_route53_key_signing_key.seehmat_ksk]
+  hosted_zone_id = var.route53_zone_id
 }
+
+
+

@@ -3,3 +3,4 @@
 *.tfstate.*
 node_modules/
 variables.tf
+terraform.tfvars
