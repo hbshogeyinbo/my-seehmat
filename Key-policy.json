@@ -1,0 +1,4 @@
+aws kms put-key-policy \
+    --key-id 89758596-d0f6-4a4e-a34b-81c6cf7d098c \
+    --policy-name default \
+    --policy file://key-policy.json
