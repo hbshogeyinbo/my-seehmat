@@ -20,9 +20,11 @@ jobs:
       with:
         terraform_version: 1.5.0
 
-    # Step 3: Clean up the cached providers
-    - name: Clean .terraform directory
-      run: rm -rf .terraform .terraform.lock.hcl
+    # Step 3: Clean .terraform Directory
+    - name: Clean Terraform Cached Files
+      run: |
+        rm -rf .terraform
+        rm -f .terraform.lock.hcl
       working-directory: terraform/
 
     # Step 4: Initialize Terraform
@@ -34,18 +36,20 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
 
-    # Step 4: Terraform Validate
-    - name: Validate Terraform Code
-      run: terraform validate
+    # Step 4.5: Debug Providers
+    - name: Debug Providers
+      run: terraform providers
       working-directory: terraform/
+  
 
     # Step 5: Terraform Plan
-    - name: Plan Terraform Changes
-      run: terraform plan 
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: terraform/
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.TF_VAR_AWS_REGIONN }}
+        AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
         TF_VAR_AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
         TF_VAR_AWS_US_REGION: ${{ secrets.TF_VAR_AWS_US_REGION }}
         TF_VAR_DOMAIN_NAME: ${{ secrets.TF_VAR_DOMAIN_NAME }}
@@ -81,3 +85,5 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
+
+            # Step 4.5: Debug Providers
