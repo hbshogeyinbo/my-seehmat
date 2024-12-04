@@ -39,6 +39,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
+        TF_VAR_AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
+        TF_VAR_AWS_US_REGION: ${{ secrets.TF_VAR_AWS_US_REGION }}
+        TF_VAR_DOMAIN_NAME: ${{ secrets.TF_VAR_DOMAIN_NAME }}
+        TF_VAR_KMS_KEY_ARN: ${{ secrets.TF_VAR_KMS_KEY_ARN }}
 
     # Step 6: Terraform Apply
     - name: Apply Terraform Changes
@@ -48,6 +52,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
+        TF_VAR_AWS_REGION: ${{ secrets.TF_VAR_AWS_REGION }}
+        TF_VAR_AWS_US_REGION: ${{ secrets.TF_VAR_AWS_US_REGION }}
+        TF_VAR_DOMAIN_NAME: ${{ secrets.TF_VAR_DOMAIN_NAME }}
+        TF_VAR_KMS_KEY_ARN: ${{ secrets.TF_VAR_KMS_KEY_ARN }}
 
     # Step 7: Deploy to S3
     - name: Deploy to S3

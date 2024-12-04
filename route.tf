@@ -15,11 +15,13 @@ resource "aws_route53_zone" "seehmat_zone" {
 }
 
 data "aws_acm_certificate" "seehmat_cert" {
-  domain   = var.domain_name
-  statuses = ["ISSUED"]
+  domain      = var.domain_name
+  statuses    = ["ISSUED"]
   most_recent = true
-  provider  = aws.us
+  provider    = aws.us
+  key_types   = ["RSA_2048"]
 }
+
 
 resource "aws_route53_record" "root_domain" {
   zone_id = aws_route53_zone.seehmat_zone.zone_id
