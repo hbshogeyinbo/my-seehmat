@@ -20,7 +20,12 @@ jobs:
       with:
         terraform_version: 1.5.0
 
-    # Step 3: Initialize Terraform
+    # Step 3: Clean up the cached providers
+    - name: Clean .terraform directory
+      run: rm -rf .terraform .terraform.lock.hcl
+      working-directory: terraform/
+
+    # Step 4: Initialize Terraform
     - name: Initialize Terraform
       run: terraform init -upgrade
       working-directory: terraform/
