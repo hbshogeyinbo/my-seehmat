@@ -1,9 +1,9 @@
 # Fetch AWS account details
 data "aws_caller_identity" "current" {}
 
-# Fetch Route 53 hosted zone dynamically
+
 data "aws_route53_zone" "selected" {
-   zone_id = var.route53_zone_id
+  zone_id = var.route53_zone_id
 }
 
 # Create a KMS key for DNSSEC
