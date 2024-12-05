@@ -36,14 +36,14 @@ jobs:
     - name: Fetch Secrets from AWS Secrets Manager
       id: fetch-secrets
       run: |
-        ACM_CERTIFICATE_ARN=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .ACM_CERTIFICATE_ARN)
-        CLOUDFRONT_DISTRIBUTION_ID=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .CLOUDFRONT_DISTRIBUTION_ID)
-        DOMAIN_NAME=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .DOMAIN_NAME)
-        KMS_KEY_ARN=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .KMS_KEY_ARN)
-        ROUTE53_ZONE_ID=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .ROUTE53_ZONE_ID)
-        LOGS_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .LOGS_BUCKET_NAME)
-        WEBSITE_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .WEBSITE_BUCKET_NAME)
-        ORIGIN_ACCESS_CONTROL_ID=$(aws secretsmanager get-secret-value --secret-id my-terraform-secrets --query 'SecretString' --output text | jq -r .ORIGIN_ACCESS_CONTROL_ID)
+        ACM_CERTIFICATE_ARN=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .ACM_CERTIFICATE_ARN)
+        CLOUDFRONT_DISTRIBUTION_ID=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .CLOUDFRONT_DISTRIBUTION_ID)
+        DOMAIN_NAME=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .DOMAIN_NAME)
+        KMS_KEY_ARN=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .KMS_KEY_ARN)
+        ROUTE53_ZONE_ID=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .ROUTE53_ZONE_ID)
+        LOGS_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .LOGS_BUCKET_NAME)
+        WEBSITE_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .WEBSITE_BUCKET_NAME)
+        ORIGIN_ACCESS_CONTROL_ID=$(aws secretsmanager get-secret-value --secret-id Terraformvar --query 'SecretString' --output text | jq -r .ORIGIN_ACCESS_CONTROL_ID)
 
         echo "::set-output name=ACM_CERTIFICATE_ARN::$ACM_CERTIFICATE_ARN"
         echo "::set-output name=CLOUDFRONT_DISTRIBUTION_ID::$CLOUDFRONT_DISTRIBUTION_ID"
