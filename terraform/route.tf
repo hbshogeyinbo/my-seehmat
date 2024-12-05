@@ -10,7 +10,7 @@
 #   region = var.aws_us_region
 # }
 
-resource "aws_route53_zone" "seehmat_zone" {
+data "aws_route53_zone" "selected" {
   name = var.domain_name
 }
 
