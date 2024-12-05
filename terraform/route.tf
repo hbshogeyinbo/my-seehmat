@@ -18,7 +18,7 @@ data "aws_acm_certificate" "seehmat_cert" {
   domain      = var.domain_name
   statuses    = ["ISSUED"]
   most_recent = true
-  provider    = aws.us-east-1
+  provider    = aws.us
   key_types   = ["RSA_2048"]
 }
 
