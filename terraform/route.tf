@@ -1,16 +1,3 @@
-# route.tf
-
-# provider "aws" {
-#   alias  = "eu"
-#   region = var.aws_region
-# }
-
-# provider "aws" {
-#   alias  = "us"
-#   region = var.aws_us_region
-# }
-
-
 data "aws_route53_zone" "selected" {
   name = var.domain_name
 }
@@ -36,7 +23,7 @@ resource "aws_route53_record" "root_domain" {
 }
 
 resource "aws_route53_record" "www_subdomain" {
-  zone_id = aws_route53_zone.seehmat_zone.zone_id
+  zone_id = data.aws_route53_zone.selected.zone_id
   name    = "www.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
