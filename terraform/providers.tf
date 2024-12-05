@@ -7,7 +7,7 @@ provider "aws" {
 
 provider "aws" {
   alias  = "us"
-  region = var.aws_us_region
+  region = "us-east-1"
 }
 
 terraform {
