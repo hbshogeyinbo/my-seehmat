@@ -10,9 +10,6 @@
 #   region = var.aws_us_region
 # }
 
-data "aws_route53_zone" "selected" {
-  name = var.domain_name
-}
 
 data "aws_acm_certificate" "seehmat_cert" {
   domain      = var.domain_name
@@ -24,7 +21,7 @@ data "aws_acm_certificate" "seehmat_cert" {
 
 
 resource "aws_route53_record" "root_domain" {
-  zone_id = aws_route53_zone.seehmat_zone.zone_id
+  zone_id = aws_route53_zone.selected.zone_id
   name    = var.domain_name
   type    = "A"
 
