@@ -11,6 +11,10 @@
 # }
 
 
+data "aws_route53_zone" "selected" {
+  name = var.domain_name
+}
+
 data "aws_acm_certificate" "seehmat_cert" {
   domain      = var.domain_name
   statuses    = ["ISSUED"]
@@ -19,9 +23,8 @@ data "aws_acm_certificate" "seehmat_cert" {
   key_types   = ["RSA_2048"]
 }
 
-
 resource "aws_route53_record" "root_domain" {
-  zone_id = aws_route53_zone.selected.zone_id
+  zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.domain_name
   type    = "A"
 
