@@ -22,7 +22,7 @@ jobs:
 
       # Initialize Terraform
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -upgrade
 
       # Terraform Plan
       - name: Terraform Plan
@@ -52,7 +52,7 @@ jobs:
         run: |
           aws s3 sync ./website s3://seehmat.com-website --delete
 
-      # Invalidate CloudFront cache (optional)
+      # Invalidate CloudFront Cache (optional)
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
