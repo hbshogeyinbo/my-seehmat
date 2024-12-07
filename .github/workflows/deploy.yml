@@ -20,6 +20,10 @@ jobs:
         with:
           terraform_wrapper: false
 
+      # Clean Terraform Cache
+      - name: Clean Terraform Cache
+        run: rm -rf .terraform
+
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init -upgrade
