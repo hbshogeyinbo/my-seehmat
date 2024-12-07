@@ -1,4 +1,4 @@
-name: CI/CD Workflow for Terraform and Static Site
+name: Deploy Infrastructure and Website
 
 on:
   push:
@@ -10,39 +10,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout Code
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Install AWS CLI
-    - name: Install AWS CLI
-      run: |
-        if ! command -v aws &> /dev/null; then
-          echo "Installing AWS CLI"
+      # Set up Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+      # Install AWS CLI
+      - name: Install AWS CLI
+        run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
-        fi
 
-    # Step 3: Configure AWS Credentials
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-1
+      # Configure AWS CLI
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    # Step 4: Initialize Terraform
-    - name: Terraform Init
-      run: terraform init
-      working-directory: terraform/
+      # Sync website files to S3
+      - name: Sync files to S3
+        run: |
+          aws s3 sync ./website s3://seehmat.com-website --delete
 
-    # Step 5: Terraform Plan
-    - name: Terraform Plan
-      run: terraform plan -out=tfplan
-      working-directory: terraform/
-
-    # Step 6: Terraform Apply
-    - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
-      working-directory: terraform/
+      # Invalidate CloudFront cache (optional)
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
