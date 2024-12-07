@@ -10,55 +10,91 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Step 1: Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-      # Set up Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-
-      # Clean Terraform Cache
-      - name: Clean Terraform Cache
-        run: rm -rf .terraform
-
-      # Initialize Terraform
-      - name: Terraform Init
-        run: terraform init -upgrade
-
-      # Terraform Plan
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-      # Terraform Apply
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-
-      # Install AWS CLI
-      - name: Install AWS CLI
-        run: |
+    # Step 2: Install AWS CLI (Ensure AWS CLI is Installed)
+    - name: Install AWS CLI
+      run: |
+        if ! command -v aws &> /dev/null; then
+          echo "Installing AWS CLI"
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
 
-      # Configure AWS CLI
-      - name: Configure AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    # Step 3: Configure AWS Credentials
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.TF_VAR_AWS_REGION }}
 
-      # Sync website files to S3
-      - name: Sync files to S3
-        run: |
-          aws s3 sync ./website s3://seehmat.com-website --delete
+    # Step 4: Fetch Secrets from AWS Secrets Manager
+    - name: Fetch Secrets from AWS Secrets Manager
+      id: fetch-secrets
+      run: |
+        ACM_CERTIFICATE_ARN=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .ACM_CERTIFICATE_ARN)
+        CLOUDFRONT_DISTRIBUTION_ID=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .CLOUDFRONT_DISTRIBUTION_ID)
+        DOMAIN_NAME=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .DOMAIN_NAME)
+        KMS_KEY_ARN=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .KMS_KEY_ARN)
+        ROUTE53_ZONE_ID=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .ROUTE53_ZONE_ID)
+        LOGS_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .LOGS_BUCKET_NAME)
+        WEBSITE_BUCKET_NAME=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .WEBSITE_BUCKET_NAME)
+        ORIGIN_ACCESS_CONTROL_ID=$(aws secretsmanager get-secret-value --secret-id SeehmatVar --query 'SecretString' --output text | jq -r .ORIGIN_ACCESS_CONTROL_ID)
 
-      # Invalidate CloudFront Cache (optional)
-      - name: Invalidate CloudFront Cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+        echo "::set-output name=ACM_CERTIFICATE_ARN::$ACM_CERTIFICATE_ARN"
+        echo "::set-output name=CLOUDFRONT_DISTRIBUTION_ID::$CLOUDFRONT_DISTRIBUTION_ID"
+        echo "::set-output name=DOMAIN_NAME::$DOMAIN_NAME"
+        echo "::set-output name=KMS_KEY_ARN::$KMS_KEY_ARN"
+        echo "::set-output name=ROUTE53_ZONE_ID::$ROUTE53_ZONE_ID"
+        echo "::set-output name=LOGS_BUCKET_NAME::$LOGS_BUCKET_NAME"
+        echo "::set-output name=WEBSITE_BUCKET_NAME::$WEBSITE_BUCKET_NAME"
+        echo "::set-output name=ORIGIN_ACCESS_CONTROL_ID::$ORIGIN_ACCESS_CONTROL_ID"
+
+    # Step 5: Setup Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    # Step 6: Clean Cached Providers
+    - name: Clean Terraform Cached Files
+      run: |
+        rm -rf .terraform
+        rm -f .terraform.lock.hcl
+      working-directory: terraform/
+
+    # Step 7: Initialize Terraform
+    - name: Initialize Terraform
+      run: terraform init -upgrade
+      working-directory: terraform/
+
+    # Step 8: Terraform Plan
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+      working-directory: terraform/
+      env:
+        TF_VAR_ACM_CERTIFICATE_ARN: ${{ steps.fetch-secrets.outputs.ACM_CERTIFICATE_ARN }}
+        TF_VAR_CLOUDFRONT_DISTRIBUTION_ID: ${{ steps.fetch-secrets.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+        TF_VAR_DOMAIN_NAME: ${{ steps.fetch-secrets.outputs.DOMAIN_NAME }}
+        TF_VAR_KMS_KEY_ARN: ${{ steps.fetch-secrets.outputs.KMS_KEY_ARN }}
+        TF_VAR_ROUTE53_ZONE_ID: ${{ steps.fetch-secrets.outputs.ROUTE53_ZONE_ID }}
+        TF_VAR_LOGS_BUCKET_NAME: ${{ steps.fetch-secrets.outputs.LOGS_BUCKET_NAME }}
+        TF_VAR_WEBSITE_BUCKET_NAME: ${{ steps.fetch-secrets.outputs.WEBSITE_BUCKET_NAME }}
+        TF_VAR_ORIGIN_ACCESS_CONTROL_ID: ${{ steps.fetch-secrets.outputs.ORIGIN_ACCESS_CONTROL_ID }}
+
+    # Step 9: Terraform Apply
+    - name: Apply Terraform Changes
+      run: terraform apply -auto-approve tfplan
+      working-directory: terraform/
+      env:
+        TF_VAR_ACM_CERTIFICATE_ARN: ${{ steps.fetch-secrets.outputs.ACM_CERTIFICATE_ARN }}
+        TF_VAR_CLOUDFRONT_DISTRIBUTION_ID: ${{ steps.fetch-secrets.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+        TF_VAR_DOMAIN_NAME: ${{ steps.fetch-secrets.outputs.DOMAIN_NAME }}
+        TF_VAR_KMS_KEY_ARN: ${{ steps.fetch-secrets.outputs.KMS_KEY_ARN }}
+        TF_VAR_ROUTE53_ZONE_ID: ${{ steps.fetch-secrets.outputs.ROUTE53_ZONE_ID }}
+        TF_VAR_LOGS_BUCKET_NAME: ${{ steps.fetch-secrets.outputs.LOGS_BUCKET_NAME }}
+        TF_VAR_WEBSITE_BUCKET_NAME: ${{ steps.fetch-secrets.outputs.WEBSITE_BUCKET_NAME }}
+        TF_VAR_ORIGIN_ACCESS_CONTROL_ID: ${{ steps.fetch-secrets.outputs.ORIGIN_ACCESS_CONTROL_ID }}
