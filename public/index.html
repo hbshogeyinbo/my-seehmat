@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume</title>
     <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Hameed Shogeyinbo | Cloud Engineer</title>
+    <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
     <div class="container">
@@ -21,9 +25,43 @@
                 <p>GitHub: <a href="https://github.com/hbshogeyinbo" target="_blank">View GitHub repositories</a></p>
             </div>
             <div id="about" class="section">
-            
+        <!-- Sidebar Section -->
+        <aside class="sidebar">
+            <img src="1716252776052.jpg" alt="Hameed Shogeyinbo Profile Picture" class="profile-picture"/>
+            <nav class="menu">
+                <div data-scroll="about" class="active">About</div>
+                <div data-scroll="projects">Projects</div>
+                <div data-scroll="experience">Experience</div>
+                <div data-scroll="education">Education</div>
+                <div data-scroll="skills">Skills</div>
+                <div data-scroll="certification">Certifications</div>
+                <div data-scroll="contact">Contact</div>
+            </nav>
+        </aside>
+        <!-- Main Content Section -->
+        <main class="main-content">
+
+            <!-- About / Summary Section -->
+            <section id="about" class="section">
+                <div class="name-container">
                     <h1 class="name">HAMEED SHOGEYINBO</h1>
-                
+                    <h2>Cloud Engineer</h2>
+                </div>
+                <h2>Summary</h2>
+                <p>
+                    A dedicated and driven Cloud Engineer with a solid foundation in AWS, Linux, scripting, 
+                    and Infrastructure as Code. Over the past 6 months, I have developed and deployed 
+                    complex, highly available architectures on AWS, utilizing Terraform for IaC and 
+                    implementing CI/CD pipelines for efficient application delivery. Known for my 
+                    resourcefulness and enthusiasm for learning, I deliver scalable, secure, and cost-effective 
+                    cloud solutions that align with business goals.
+                </p>
+            </section>
+            
+            <!-- Projects Section -->
+            <section id="projects" class="section">
+                <h2>Projects</h2>
+
                 <h2>SUMMARY</h2>
                 <p>Over the past 6 months, I have been developing projects on AWS. I can confidently navigate the Linux command line and can write scripts and automation in both Bash and Python. I have created complex CICD pipelines and can comfortably create infrastructure using Terraform. I am eager to learn new things and to apply that knowledge to my work.</p>
             </div>
@@ -32,6 +70,8 @@
                 <div class="project">
                     <h3>WordPress Multi-Tier Deployment</h3>
                     <p>Deployed a multi-tier WordPress service using Terraform:</p>
+                <article class="project">
+                    <h3>WordPress Multi-Tier Deployment (AWS + Terraform)</h3>
                     <ul>
                         <li>Created a VPC with public and private subnets.</li>
                         <li>Deployed an RDS instance and EC2 instances in private subnets.</li>
@@ -39,28 +79,51 @@
                         <li>Configured an ALB in the public subnets for traffic routing from the internet to my private WordPress service..</li>
                         <li>Controlled connections with security groups using least permissive access in mind.</li>
                         <li>All these resources were created using a Terraform script I wrote.</li>
+                        <li>Leveraged Terraform to provision a VPC, subnets, security groups, and AWS RDS instances.</li>
+                        <li>Deployed an EC2-based LAMP stack for WordPress in private subnets with a public-facing ALB.</li>
+                        <li>Implemented least-privilege security controls, ensuring secure and efficient networking.</li>
+                        <li>Demonstrated full infrastructure automation from scratch, reducing deployment time and errors.</li>
                     </ul>
                 </div>
                 <div class="project">
+                </article>
+                
+                <article class="project">
                     <h3>Auto-Scaling EC2 Infrastructure</h3>
                     <p>Created an autoscaling EC2 infrastructure for a scalable Apache web service:</p>
                     <ul>
                         <li>Configured Launch Templates, UserData scripts, ALB, Target Groups, and CloudWatch Alarms for scaling activities based on CPU metrics.</li>
+                        <li>Designed scalable Apache-based infrastructure using Launch Templates, ALB, and Auto Scaling Groups.</li>
+                        <li>Implemented CloudWatch alarms to trigger scaling activities based on CPU thresholds, ensuring optimal performance and cost utilization.</li>
+                        <li>Reduced downtime and improved responsiveness under unpredictable traffic loads.</li>
                     </ul>
                 </div>
                 <div class="project">
                     <h3>Multi-Environment CICD Pipeline</h3>
                     <p>Set up a multi-environment CICD pipeline for application deployment:</p>
+                </article>
+                
+                <article class="project">
+                    <h3>Multi-Environment CI/CD Pipeline</h3>
                     <ul>
                         <li>Stored code in GitHub and configured a pipeline with CodePipeline.</li>
                         <li>Utilized CodeDeploy for code deployment across EC2 instances in multiple environments.</li>
+                        <li>Set up a multi-stage deployment pipeline (dev, staging, prod) using CodePipeline and CodeBuild.</li>
+                        <li>Configured CodeDeploy to push application updates seamlessly to EC2 instances across multiple environments.</li>
+                        <li>Reduced manual intervention and minimized lead time to production, increasing team agility.</li>
                     </ul>
                 </div>
                 <div class="project">
+                </article>
+                
+                <article class="project">
                     <h3>EC2 Instance Scheduling Service</h3>
                     <p>Created an EC2 Instance scheduling service to optimize costs:</p>
                     <ul>
                         <li>Used CloudWatch Event triggers and Lambdas to schedule dev instances to turn off at 6pm and turn on at 8am Monday – Friday.</li>
+                        <li>Developed Lambda functions triggered by CloudWatch Events to start and stop dev EC2 instances on a schedule (Mon-Fri, 8am-6pm).</li>
+                        <li>Achieved cost savings by ensuring that non-critical instances only run during business hours.</li>
+                        <li>Demonstrated proficiency in AWS Lambda, CloudWatch, and event-driven architecture.</li>
                     </ul>
                 </div>
             </div>
@@ -90,11 +153,68 @@
             </div>
             <div id="certification" class="section">
                 <h2>CERTIFICATION</h2>
+                </article>
+            </section>
+            
+            <!-- Experience Section -->
+            <section id="experience" class="section">
+                <h2>Experience</h2>
+                <article class="job">
+                    <h3>Crew Member - McDonald's</h3>
+                    <p>June 2023 - July 2024</p>
+                    <ul>
+                        <li>Managed high-volume customer orders with accuracy and efficiency.</li>
+                        <li>Collaborated with team members to optimize workflow and reduce wait times.</li>
+                        <li>Maintained data integrity using point-of-sale systems, demonstrating attention to detail.</li>
+                        <li>Adhered to strict protocols and standards, developing a strong sense of responsibility and reliability.</li>
+                    </ul>
+                </article>
+            </section>
+            
+            <!-- Education Section -->
+            <section id="education" class="section">
+                <h2>Education</h2>
+                <p><strong>Bachelor of Science in Computer Science</strong></p>
+                <p>University of Prince Edward Island | 2022 - 2026</p>
+                <p>
+                    Relevant coursework: Cloud Computing, Distributed Systems, Software Engineering, Network Security, 
+                    Data Structures & Algorithms. Actively applying knowledge from coursework to real-world cloud projects.
+                </p>
+            </section>
+            
+            <!-- Skills Section -->
+            <section id="skills" class="section">
+                <h2>Skills</h2>
+                <p>
+                    <strong>Cloud & DevOps:</strong> AWS (EC2, S3, RDS, CloudWatch, VPC, ALB), IAM, Terraform, CI/CD (CodePipeline, CodeBuild, CodeDeploy), Docker, Linux  
+                </p>
+                <p>
+                    <strong>Programming & Scripting:</strong> Bash, Python  
+                </p>
+                <p>
+                    <strong>Other:</strong> Git/GitHub, Infrastructure as Code (IaC), Automation, Troubleshooting, Agile Methodologies
+                </p>
+            </section>
+            
+            <!-- Certification Section -->
+            <section id="certification" class="section">
+                <h2>Certifications</h2>
                 <p>AWS Certified Cloud Practitioner <span class="in-progress">(in progress)</span></p>
                 <p>AWS Certified Solutions Architect <span class="in-progress">(in progress)</span></p>
             </div>
         </div>
+                <p>AWS Certified Solutions Architect - Associate <span class="in-progress">(in progress)</span></p>
+            </section>
+            
+            <!-- Contact Section -->
+            <section id="contact" class="section">
+                <h2>Contact</h2>
+                <p><strong>Email:</strong> <a href="mailto:hameedshogeyinbo@gmail.com">hameedshogeyinbo@gmail.com</a></p>
+                <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/hameed-shogeyinbo-ab06ab2ab" target="_blank">View LinkedIn Profile</a></p>
+                <p><strong>GitHub:</strong> <a href="https://github.com/hbshogeyinbo" target="_blank">View GitHub Repositories</a></p>
+            </section>
+            
+        </main>
     </div>
     <script src="scripts.js"></script>
 </body>
-</html>
