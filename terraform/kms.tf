@@ -1,75 +1,21 @@
-# Fetch AWS account details
 data "aws_caller_identity" "current" {}
 
-# Fetch AWS Account Information
-data "aws_caller_identity" "current" {}
-
-# Create a Route 53 Hosted Zone (in your default region)
-resource "aws_route53_zone" "seehmat_zone" {
-  name = var.domain_name
-}
-
-# Create a KMS key for DNSSEC
-# Create KMS Key for DNSSEC (must be in us-east-1)
 resource "aws_kms_key" "dnssec_key" {
-  # Ensure the provider matches the correct region
-  provider                = aws.us
-  customer_master_key_spec = "ECC_NIST_P256"
-  deletion_window_in_days  = 7
-  key_usage                = "SIGN_VERIFY"
+  description             = "KMS key for DNSSEC signing"
+  deletion_window_in_days = 10
+  key_usage               = "SIGN_VERIFY"
 
-  # Policy for the KMS key
   policy = jsonencode({
-    "Version": "2012-10-17",
-    "Id": "dnssec-policy",
-    "Statement": [
+    Version = "2012-10-17",
+    Statement = [
       {
-        "Sid": "Allow administration of the key",
-@@ -43,42 +44,23 @@ resource "aws_kms_key" "dnssec_key" {
-            "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
-          },
-          "ArnLike": {
-            "aws:SourceArn": "arn:aws:route53:::hostedzone/${data.aws_route53_zone.selected.id}"
-          }
-        }
-      },
-      {
-        "Sid": "Allow Route 53 DNSSEC to CreateGrant",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "dnssec-route53.amazonaws.com"
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         },
-        "Action": [
-          "kms:CreateGrant"
-        ],
-        "Resource": "*",
-        "Condition": {
-          "Bool": {
-            "kms:GrantIsForAWSResource": true
-            "aws:SourceArn": "arn:aws:route53:::hostedzone/${aws_route53_zone.seehmat_zone.id}"
-          }
-        }
+        Action = "kms:*",
+        Resource = "*"
       }
     ]
   })
-}
-
-# Route 53 Key Signing Key
-resource "aws_route53_key_signing_key" "seehmat_ksk" {
-  hosted_zone_id             = var.route53_zone_id
-# Create Key Signing Key (KSK) in the hosted zone
-resource "aws_route53_key_signing_key" "ksk" {
-  hosted_zone_id             = aws_route53_zone.seehmat_zone.id
-  key_management_service_arn = aws_kms_key.dnssec_key.arn
-  name                       = "seehmat-ksk"
-  name                       = "${var.domain_name}-ksk"
-}
-
-# Enable DNSSEC for the hosted zone
-resource "aws_route53_hosted_zone_dnssec" "seehmat_dnssec" {
-  depends_on     = [aws_route53_key_signing_key.seehmat_ksk]
-  hosted_zone_id = var.route53_zone_id
-resource "aws_route53_hosted_zone_dnssec" "dnssec" {
-  depends_on     = [aws_route53_key_signing_key.ksk]
-  hosted_zone_id = aws_route53_zone.seehmat_zone.id
 }
