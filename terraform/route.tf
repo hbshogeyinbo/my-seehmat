@@ -1,31 +1,28 @@
 data "aws_route53_zone" "selected" {
-  name = "seehmat.com"
+  name         = var.domain_name                  # Domain name for the Route 53 hosted zone
+  private_zone = false
 }
 
-data "aws_acm_certificate" "seehmat_cert" {
-  domain      = var.domain_name
-  statuses    = ["ISSUED"]
-  most_recent = true
-  provider    = aws.us
-  key_types   = ["RSA_2048"]
-}
+resource "aws_route53_key_signing_key" "dnssec_key" {
+  hosted_zone_id = data.aws_route53_zone.selected.id
+  name           = "dnssec-key-${var.environment}"
+  status         = "ACTIVE"
 
-resource "aws_route53_record" "root_domain" {
-  zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.domain_name
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.s3_distribution.domain_name
-    zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
-    evaluate_target_health = false
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
-resource "aws_route53_record" "www_subdomain" {
-  zone_id = data.aws_route53_zone.selected.zone_id
-  name    = "www.${var.domain_name}"
-  type    = "CNAME"
+resource "aws_route53_dnssec" "dnssec" {
+  hosted_zone_id = data.aws_route53_zone.selected.id
+}
+
+resource "aws_route53_record" "cert_validation" {
+  zone_id = data.aws_route53_zone.selected.id
+  name    = aws_acm_certificate.cert.domain_validation_options[0].resource_record_name
+  type    = aws_acm_certificate.cert.domain_validation_options[0].resource_record_type
   ttl     = 300
-  records = [aws_cloudfront_distribution.s3_distribution.domain_name]
+  records = [aws_acm_certificate.cert.domain_validation_options[0].resource_record_value]
+
+  depends_on = [aws_acm_certificate.cert]         # Ensure certificate is created first
 }

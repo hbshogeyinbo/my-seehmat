@@ -1,59 +1,36 @@
-# variables.tf.example
-
-# AWS Region for deployment
-variable "aws_region" {
-  description = "The AWS region to deploy resources in"
-  type        = string
+variable "environment" {
+  description = "Deployment environment (e.g., dev, staging, prod)"
+  default     = "dev"
 }
 
-variable "aws_us_region" {
-  description = "The AWS region for US services (like ACM and KMS)"
-  type        = string
+variable "backend_bucket_name" {
+  description = "S3 bucket for storing Terraform backend state"
 }
 
-# S3 Bucket Names
-variable "website_bucket_name" {
-  description = "Name of the S3 bucket to store website content"
-  type        = string
+variable "backend_bucket_region" {
+  description = "AWS region for the backend S3 bucket"
+  default     = "us-east-1"
 }
 
-variable "logs_bucket_name" {
-  description = "Name of the S3 bucket to store CloudFront logs"
-  type        = string
+variable "backend_lock_table" {
+  description = "DynamoDB table for state locking"
 }
 
-# Domain Name
 variable "domain_name" {
-  description = "Domain name for the website"
-  type        = string
+  description = "Domain name for Route 53 hosted zone"
 }
 
-# CloudFront Distribution ID
-variable "cloudfront_distribution_id" {
-  description = "CloudFront distribution ID for cache invalidation"
-  type        = string
+variable "aws_region" {
+  description = "AWS region for resource deployment"
+  default     = "us-east-1"
 }
 
-# ACM Certificate ARN
-variable "acm_certificate_arn" {
-  description = "ARN of the ACM certificate for CloudFront"
-  type        = string
+variable "kms_alias" {
+  description = "Alias name for the KMS key"
+  default     = "my-key-alias"
 }
 
-# KMS Key ARN for DNSSEC
-variable "kms_key_arn" {
-  description = "ARN of the KMS key used for DNSSEC"
-  type        = string
-}
-
-# Route 53 Zone ID
-variable "route53_zone_id" {
-  description = "ID of the Route 53 hosted zone"
-  type        = string
-}
-
-# Origin Access Control ID
-variable "origin_access_control_id" {
-  description = "ID of the CloudFront origin access control"
-  type        = string
+variable "geo_restrictions" {
+  description = "List of allowed geographic locations for CloudFront"
+  type        = list(string)
 }
