@@ -19,12 +19,12 @@ resource "aws_s3_bucket_public_access_block" "website_bucket_access_block" {
   bucket = aws_s3_bucket.website_bucket.id
 
   block_public_acls       = true
-  block_public_policy     = false
+  block_public_policy     = true # Ensure full restriction on public policies
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
-# Website Bucket Policy (Replaces ACL)
+# Website Bucket Policy for CloudFront
 resource "aws_s3_bucket_policy" "website_bucket_policy" {
   bucket = aws_s3_bucket.website_bucket.id
 
@@ -36,11 +36,18 @@ resource "aws_s3_bucket_policy" "website_bucket_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "PublicReadGetObject",
+        Sid       = "AllowCloudFrontAccess",
         Effect    = "Allow",
-        Principal = "*",
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        },
         Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.website_bucket.arn}/*"
+        Resource  = "${aws_s3_bucket.website_bucket.arn}/*",
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.s3_distribution.arn
+          }
+        }
       }
     ]
   })
@@ -62,7 +69,7 @@ resource "aws_s3_bucket_public_access_block" "logs_bucket_access_block" {
   bucket = aws_s3_bucket.logs_bucket.id
 
   block_public_acls       = true
-  block_public_policy     = false
+  block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
