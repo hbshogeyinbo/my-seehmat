@@ -53,9 +53,7 @@ jobs:
     # Step 7: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
-      run: |
-        echo "Applying Terraform changes..."
-        terraform apply -auto-approve tfplan
+      run: terraform apply -auto-approve tfplan
       working-directory: terraform/
 
     # Step 8: Retrieve CloudFront Distribution ID
@@ -63,19 +61,22 @@ jobs:
       id: get_cf_id
       run: |
         echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        CF_ID=$(terraform output -raw cloudfront_distribution_id || echo "")
+        CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
         if [ -z "$CF_ID" ]; then
           echo "Error: CloudFront Distribution ID not found!"
           exit 1
         fi
+        echo "CloudFront Distribution ID: $CF_ID"
         echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
       working-directory: terraform/
 
-    # Step 9: Upload Website Files to S3
-    - name: Upload Website Files to S3
+    # Step 9: Sync Website Files to S3
+    - name: Upload Website Files
       run: |
-        echo "Syncing website files to S3 bucket..."
-        aws s3 sync ./public s3://seehmat.com-website --delete --acl private
+        echo "Syncing files to S3..."
+        aws s3 sync ./public s3://seehmat.com-website \
+          --delete \
+          --acl private
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -84,7 +85,9 @@ jobs:
     - name: Invalidate CloudFront Cache
       run: |
         echo "Invalidating CloudFront cache..."
-        aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
