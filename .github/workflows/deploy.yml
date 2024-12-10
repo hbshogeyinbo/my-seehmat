@@ -1,3 +1,4 @@
+# Updated Deploy Workflow with S3 File Upload
 name: CI/CD Workflow for Terraform and Static Site
 
 on:
@@ -52,3 +53,11 @@ jobs:
     - name: Terraform Apply
       run: terraform apply -auto-approve tfplan
       working-directory: terraform/
+
+    # Step 8: Upload Website Files to S3
+    - name: Upload Website Files
+      run: |
+        aws s3 sync ./public s3://seehmat.com --acl public-read
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
