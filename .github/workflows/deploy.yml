@@ -66,14 +66,12 @@ jobs:
           echo "Error: CloudFront Distribution ID not found!"
           exit 1
         fi
-        echo "Retrieved CloudFront Distribution ID: $CF_ID"
         echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
-      working-directory: terraform/
+        echo "Retrieved CloudFront Distribution ID: $CF_ID"
 
     # Step 9: Sync Website Files to S3
     - name: Upload Website Files
       run: |
-        echo "Syncing files to S3 bucket..."
         aws s3 sync ./public s3://seehmat.com-website \
           --delete \
           --acl private
@@ -84,9 +82,8 @@ jobs:
     # Step 10: Invalidate CloudFront Cache
     - name: Invalidate CloudFront Cache
       run: |
-        echo "Invalidating CloudFront cache..."
         aws cloudfront create-invalidation \
-          --distribution-id ${{ env.cloudfront_distribution_id }} \
+          --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
           --paths "/*"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
