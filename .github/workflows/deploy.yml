@@ -34,29 +34,25 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
 
-    # Step 4: Setup Terraform
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.5.0
-
-    # Step 5: Terraform Init
-    - name: Terraform Init
-      run: terraform init
+    # Step 4: Clean and Setup Terraform
+    - name: Clean and Setup Terraform
+      run: |
+        rm -rf .terraform
+        terraform init -reconfigure
       working-directory: terraform/
 
-    # Step 6: Terraform Plan
+    # Step 5: Terraform Plan
     - name: Terraform Plan
       run: terraform plan -out=tfplan
       working-directory: terraform/
 
-    # Step 7: Terraform Apply
+    # Step 6: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
       run: terraform apply -auto-approve tfplan
       working-directory: terraform/
 
-    # Step 8: Retrieve CloudFront Distribution ID
+    # Step 7: Retrieve CloudFront Distribution ID
     - name: Retrieve CloudFront Distribution ID
       id: get_cf_id
       run: |
@@ -68,8 +64,9 @@ jobs:
         fi
         echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
         echo "Retrieved CloudFront Distribution ID: $CF_ID"
+      working-directory: terraform/
 
-    # Step 9: Sync Website Files to S3
+    # Step 8: Sync Website Files to S3
     - name: Upload Website Files
       run: |
         aws s3 sync ./public s3://seehmat.com-website \
@@ -79,7 +76,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # Step 10: Invalidate CloudFront Cache
+    # Step 9: Invalidate CloudFront Cache
     - name: Invalidate CloudFront Cache
       run: |
         aws cloudfront create-invalidation \
