@@ -34,30 +34,36 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
 
-    # Step 4: Clean and Setup Terraform
+    # Step 4: Setup Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    # Step 5: Clean and Setup Terraform
     - name: Clean and Setup Terraform
       run: |
         rm -rf .terraform
         terraform init -reconfigure
       working-directory: terraform/
 
-    # Step 5: Terraform Plan
+    # Step 6: Terraform Plan
     - name: Terraform Plan
       run: terraform plan -out=tfplan
       working-directory: terraform/
 
-    # Step 6: Terraform Apply
+    # Step 7: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
       run: terraform apply -auto-approve tfplan
       working-directory: terraform/
 
-    # Step 7: Retrieve CloudFront Distribution ID
+    # Step 8: Retrieve CloudFront Distribution ID
     - name: Retrieve CloudFront Distribution ID
       id: get_cf_id
       run: |
         echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+        CF_ID=$(terraform output -raw cloudfront_distribution_id)
         if [ -z "$CF_ID" ]; then
           echo "Error: CloudFront Distribution ID not found!"
           exit 1
@@ -66,9 +72,10 @@ jobs:
         echo "Retrieved CloudFront Distribution ID: $CF_ID"
       working-directory: terraform/
 
-    # Step 8: Sync Website Files to S3
+    # Step 9: Sync Website Files to S3
     - name: Upload Website Files
       run: |
+        echo "Syncing files to S3 bucket..."
         aws s3 sync ./public s3://seehmat.com-website \
           --delete \
           --acl private
@@ -76,9 +83,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # Step 9: Invalidate CloudFront Cache
+    # Step 10: Invalidate CloudFront Cache
     - name: Invalidate CloudFront Cache
       run: |
+        echo "Invalidating CloudFront cache..."
         aws cloudfront create-invalidation \
           --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
           --paths "/*"
