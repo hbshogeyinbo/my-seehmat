@@ -12,16 +12,18 @@ jobs:
     steps:
     # Step 1: Checkout Code
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # Step 2: Install AWS CLI
     - name: Install AWS CLI
       run: |
         if ! command -v aws &> /dev/null; then
-          echo "Installing AWS CLI"
+          echo "AWS CLI not found. Installing..."
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
+        else
+          echo "AWS CLI is already installed."
         fi
 
     # Step 3: Configure AWS Credentials
@@ -51,24 +53,29 @@ jobs:
     # Step 7: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
-      run: terraform apply -auto-approve tfplan
+      run: |
+        echo "Applying Terraform changes..."
+        terraform apply -auto-approve tfplan
       working-directory: terraform/
 
     # Step 8: Retrieve CloudFront Distribution ID
-    - name: Get CloudFront Distribution ID
+    - name: Retrieve CloudFront Distribution ID
       id: get_cf_id
       run: |
-        echo "Retrieving CloudFront Distribution ID..."
-        CF_ID=$(terraform output -raw cloudfront_distribution_id)
+        echo "Fetching CloudFront Distribution ID from Terraform outputs..."
+        CF_ID=$(terraform output -raw cloudfront_distribution_id || echo "")
+        if [ -z "$CF_ID" ]; then
+          echo "Error: CloudFront Distribution ID not found!"
+          exit 1
+        fi
         echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
       working-directory: terraform/
 
-    # Step 9: Sync Website Files to S3
-    - name: Upload Website Files
+    # Step 9: Upload Website Files to S3
+    - name: Upload Website Files to S3
       run: |
-        aws s3 sync ./public s3://seehmat.com-website \
-          --delete \
-          --acl private
+        echo "Syncing website files to S3 bucket..."
+        aws s3 sync ./public s3://seehmat.com-website --delete --acl private
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -76,9 +83,8 @@ jobs:
     # Step 10: Invalidate CloudFront Cache
     - name: Invalidate CloudFront Cache
       run: |
-        aws cloudfront create-invalidation \
-          --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-          --paths "/*"
+        echo "Invalidating CloudFront cache..."
+        aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
