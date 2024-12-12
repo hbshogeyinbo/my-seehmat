@@ -1,6 +1,6 @@
 # Website S3 Bucket
 resource "aws_s3_bucket" "website_bucket" {
-  bucket        = "seehmat.com-website"
+  bucket        = "seehmat.com"
   force_destroy = true
 
   website {
