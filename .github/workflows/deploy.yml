@@ -69,11 +69,10 @@ jobs:
       id: get_cf_id
       run: |
         echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        RAW_CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
-        CF_ID=$(echo "$RAW_CF_ID" | tr -d '\r' | awk -F '::' '{print $1}')
+        CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
         if [ -z "$CF_ID" ]; then
-          echo "Error: CloudFront Distribution ID not found!"
-          exit 1
+          echo "Skipping CloudFront invalidation as distribution ID is not found."
+          exit 0
         fi
         echo "Retrieved CloudFront Distribution ID: $CF_ID"
         echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
@@ -90,17 +89,17 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # Step 10: Invalidate CloudFront Cache
-    - name: Invalidate CloudFront Cache
+    # Step 10: Invalidate CloudFront Cache (Optional)
+    - name: Invalidate CloudFront Cache (Optional)
       run: |
-        echo "Invalidating CloudFront cache..."
         if [ -z "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-          echo "Error: CLOUDFRONT_DISTRIBUTION_ID is not set!"
-          exit 1
+          echo "Skipping invalidation: CLOUDFRONT_DISTRIBUTION_ID is not set."
+        else
+          echo "Invalidating CloudFront cache..."
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
         fi
-        aws cloudfront create-invalidation \
-          --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-          --paths "/*"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
