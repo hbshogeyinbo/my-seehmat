@@ -64,43 +64,13 @@ jobs:
         terraform apply -auto-approve tfplan
       working-directory: terraform/
 
-    # Step 8: Retrieve CloudFront Distribution ID
-    - name: Retrieve CloudFront Distribution ID
-      id: get_cf_id
-      run: |
-        echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        RAW_CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
-        CF_ID=$(echo "$RAW_CF_ID" | grep -Eo '[A-Za-z0-9]{13,}')
-        if [ -z "$CF_ID" ]; then
-          echo "Skipping CloudFront invalidation as distribution ID is not found."
-          exit 0
-        fi
-        echo "Retrieved CloudFront Distribution ID: $CF_ID"
-        echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
-      working-directory: terraform/
-
-    # Step 9: Sync Website Files to S3
+    # Step 8: Sync Website Files to S3
     - name: Upload Website Files
       run: |
         echo "Syncing files to S3 bucket..."
         aws s3 sync ./public s3://seehmat.com-website \
           --delete \
           --acl private
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    # Step 10: Invalidate CloudFront Cache (Optional)
-    - name: Invalidate CloudFront Cache (Optional)
-      run: |
-        if [ -z "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-          echo "Skipping invalidation: CLOUDFRONT_DISTRIBUTION_ID is not set."
-        else
-          echo "Invalidating CloudFront cache..."
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
-        fi
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
