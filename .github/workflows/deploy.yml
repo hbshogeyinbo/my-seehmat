@@ -49,6 +49,14 @@ jobs:
         terraform validate
       working-directory: terraform/
 
+    # Debug Step: Print Environment Variables
+    - name: Debug Environment Variables
+      run: |
+        echo "Debugging Environment Variables..."
+        echo "Hosted Zone ID: $TF_VAR_hosted_zone_id"
+      env:
+        TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
+
     # Step 6: Terraform Plan
     - name: Terraform Plan
       run: |
