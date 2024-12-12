@@ -41,7 +41,7 @@ resource "aws_route53_record" "root_domain" {
 
 # Subdomain Record (CNAME Record for www)
 resource "aws_route53_record" "www_subdomain" {
-  zone_id = aws_route53_zone.seehmat_zone.id
+  zone_id = data.aws_route53_zone.existing_zone.id
   name    = "www.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
@@ -50,7 +50,7 @@ resource "aws_route53_record" "www_subdomain" {
 
 # Create an Alias Record for CloudFront
 resource "aws_route53_record" "cloudfront_alias" {
-  zone_id = aws_route53_zone.seehmat_zone.id
+  zone_id = data.aws_route53_zone.existing_zone.id
   name    = var.domain_name
   type    = "A"
 
