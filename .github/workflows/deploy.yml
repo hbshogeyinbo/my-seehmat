@@ -69,7 +69,8 @@ jobs:
       id: get_cf_id
       run: |
         echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+        RAW_CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+        CF_ID=$(echo "$RAW_CF_ID" | sed -E 's/::.*$//g')
         if [ -z "$CF_ID" ]; then
           echo "Skipping CloudFront invalidation as distribution ID is not found."
           exit 0
