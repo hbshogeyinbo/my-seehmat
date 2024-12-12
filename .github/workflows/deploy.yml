@@ -43,19 +43,25 @@ jobs:
     # Step 5: Clean and Setup Terraform
     - name: Clean and Setup Terraform
       run: |
+        echo "Cleaning and setting up Terraform..."
         rm -rf .terraform
         terraform init -reconfigure
+        terraform validate
       working-directory: terraform/
 
     # Step 6: Terraform Plan
     - name: Terraform Plan
-      run: terraform plan -out=tfplan
+      run: |
+        echo "Running Terraform Plan..."
+        terraform plan -out=tfplan
       working-directory: terraform/
 
     # Step 7: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
-      run: terraform apply -auto-approve tfplan
+      run: |
+        echo "Applying Terraform changes..."
+        terraform apply -auto-approve tfplan
       working-directory: terraform/
 
     # Step 8: Retrieve CloudFront Distribution ID
@@ -63,13 +69,14 @@ jobs:
       id: get_cf_id
       run: |
         echo "Fetching CloudFront Distribution ID from Terraform outputs..."
-        CF_ID=$(terraform output -raw cloudfront_distribution_id)
+        RAW_CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+        CF_ID=$(echo "$RAW_CF_ID" | tr -d '\r' | awk -F '::' '{print $1}')
         if [ -z "$CF_ID" ]; then
           echo "Error: CloudFront Distribution ID not found!"
           exit 1
         fi
-        echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
         echo "Retrieved CloudFront Distribution ID: $CF_ID"
+        echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_ID" >> $GITHUB_ENV
       working-directory: terraform/
 
     # Step 9: Sync Website Files to S3
@@ -87,6 +94,10 @@ jobs:
     - name: Invalidate CloudFront Cache
       run: |
         echo "Invalidating CloudFront cache..."
+        if [ -z "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+          echo "Error: CLOUDFRONT_DISTRIBUTION_ID is not set!"
+          exit 1
+        fi
         aws cloudfront create-invalidation \
           --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
           --paths "/*"
