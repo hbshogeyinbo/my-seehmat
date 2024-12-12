@@ -55,6 +55,8 @@ jobs:
         echo "Running Terraform Plan..."
         terraform plan -out=tfplan
       working-directory: terraform/
+      env:
+        TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
 
     # Step 7: Terraform Apply
     - name: Terraform Apply
@@ -63,12 +65,14 @@ jobs:
         echo "Applying Terraform changes..."
         terraform apply -auto-approve tfplan
       working-directory: terraform/
+      env:
+        TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
 
     # Step 8: Sync Website Files to S3
     - name: Upload Website Files
       run: |
         echo "Syncing files to S3 bucket..."
-        aws s3 sync ./public s3://seehmat.com-website \
+        aws s3 sync ./public s3://seehmat.com \
           --delete \
           --acl private
       env:

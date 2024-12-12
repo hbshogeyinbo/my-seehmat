@@ -3,8 +3,8 @@
 data "aws_caller_identity" "current" {}
 
 # Create a Route 53 Hosted Zone (in your default region)
-resource "aws_route53_zone" "seehmat_zone" {
-  name = var.domain_name
+data "aws_route53_zone" "existing_zone" {
+  id = var.hosted_zone_id
 }
 
 # Create KMS Key for DNSSEC (must be in us-east-1)

@@ -59,3 +59,8 @@ variable "domain_name" {
   description = "Domain name for the website"
   default     = "seehmat.com" # Replace with your actual domain
 }
+
+variable "hosted_zone_id" {
+  description = "The Hosted Zone ID for the domain"
+  type        = string
+}

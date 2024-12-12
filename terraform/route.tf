@@ -19,7 +19,7 @@ resource "aws_route53_record" "cert_validation" {
     }
   }
 
-  zone_id = aws_route53_zone.seehmat_zone.id
+  zone_id =var.hosted_zone_id
   name    = each.value.name
   type    = each.value.type
   records = [each.value.value]
@@ -28,7 +28,7 @@ resource "aws_route53_record" "cert_validation" {
 
 # Root Domain Record (A Record)
 resource "aws_route53_record" "root_domain" {
-  zone_id = aws_route53_zone.seehmat_zone.id
+  zone_id = var.hosted_zone_id
   name    = var.domain_name
   type    = "A"
 
@@ -48,11 +48,9 @@ resource "aws_route53_record" "www_subdomain" {
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
 }
 
-
-
 # Create an Alias Record for CloudFront
 resource "aws_route53_record" "cloudfront_alias" {
-  zone_id = data.aws_route53_zone.main_zone.zone_id
+  zone_id = aws_route53_zone.seehmat_zone.id
   name    = var.domain_name
   type    = "A"
 
