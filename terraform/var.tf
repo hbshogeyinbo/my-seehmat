@@ -63,4 +63,5 @@ variable "domain_name" {
 variable "hosted_zone_id" {
   description = "The Hosted Zone ID for the domain"
   type        = string
+  default     = "seehmat.com"
 }

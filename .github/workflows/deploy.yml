@@ -33,19 +33,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
-    - name: Debug Hosted Zone Secret
-      run: |
-           echo "HOSTED_ZONE_ID=${{ secrets.HOSTED_ZONE_ID }}"
-            echo "HOSTED_ZONE_ID: ${TF_VAR_hosted_zone_id:-NOT_SET}"
-      env:
-            TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
-    - name: Verify AWS Credentials
-      run: |
-        echo "AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-NOT_SET}"
-        echo "AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-NOT_SET}"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
         
     # Step 4: Setup Terraform
     - name: Setup Terraform
