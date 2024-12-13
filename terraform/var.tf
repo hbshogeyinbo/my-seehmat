@@ -60,8 +60,3 @@ variable "domain_name" {
   default     = "seehmat.com" # Replace with your actual domain
 }
 
-variable "hosted_zone_id" {
-  description = "The Hosted Zone ID for the domain"
-  type        = string
-  default     = "seehmat.com"
-}
