@@ -49,14 +49,21 @@ jobs:
         terraform validate
       working-directory: terraform/
 
-    # Step 6: Terraform Plan
+    # Step 6: Refresh Terraform State
+    - name: Refresh Terraform State
+      run: |
+        echo "Refreshing Terraform state..."
+        terraform refresh
+      working-directory: terraform/
+
+    # Step 7: Terraform Plan
     - name: Terraform Plan
       run: |
         echo "Running Terraform Plan..."
         terraform plan -out=tfplan
       working-directory: terraform/
 
-    # Step 7: Terraform Apply
+    # Step 8: Terraform Apply
     - name: Terraform Apply
       id: terraform_apply
       run: |
@@ -64,7 +71,7 @@ jobs:
         terraform apply -auto-approve tfplan
       working-directory: terraform/
 
-    # Step 8: Sync Website Files to S3
+    # Step 9: Sync Website Files to S3
     - name: Upload Website Files
       run: |
         echo "Syncing files to S3 bucket..."
