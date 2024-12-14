@@ -19,7 +19,7 @@ resource "aws_s3_bucket_public_access_block" "website_bucket_access_block" {
   bucket = aws_s3_bucket.website_bucket.id
 
   block_public_acls       = true
-  block_public_policy     = true # Ensure full restriction on public policies
+  block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
@@ -113,6 +113,12 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     max_ttl     = 86400
   }
 
+  # Add Alternate Domain Names (CNAMEs)
+  aliases = [
+    "seehmat.com",
+    "www.seehmat.com"
+  ]
+
   viewer_certificate {
     acm_certificate_arn      = aws_acm_certificate.seehmat_cert.arn
     ssl_support_method        = "sni-only"
@@ -129,6 +135,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     Environment = "Production"
   }
 }
+
 output "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.s3_distribution.id
 }
