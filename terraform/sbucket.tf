@@ -74,12 +74,12 @@ resource "aws_s3_bucket_public_access_block" "logs_bucket_access_block" {
   restrict_public_buckets = true
 }
 
-# CloudFront Origin Access Control
+# CloudFront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "default" {
-  name                           = "SeehmatS3OriginAccessControl"
+  name                            = "SeehmatS3OriginAccessControl"
   origin_access_control_origin_type = "s3"
-  signing_behavior               = "always"
-  signing_protocol               = "sigv4"
+  signing_behavior                = "always"
+  signing_protocol                = "sigv4"
 }
 
 # CloudFront Distribution
@@ -121,8 +121,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   viewer_certificate {
     acm_certificate_arn      = aws_acm_certificate.seehmat_cert.arn
-    ssl_support_method        = "sni-only"
-    minimum_protocol_version  = "TLSv1.2_2021"
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   restrictions {
@@ -136,6 +136,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 }
 
+# Outputs
 output "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.s3_distribution.id
 }

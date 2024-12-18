@@ -14,65 +14,63 @@ jobs:
       contents: read     # Access to the repository content.
 
     steps:
-    # Step 1: Checkout Code
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    # Step 2: Configure AWS Credentials with OIDC
-    - name: Configure AWS Credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: arn:aws:iam::992382451794:role/ProductionDeploymentRole
-        aws-region: eu-west-1
+      # Step 2: Configure AWS Credentials with OIDC
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::992382451794:role/ProductionDeploymentRole
+          aws-region: eu-west-1
 
-    # Step 3: Setup Terraform
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.5.0
+      # Step 3: Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
 
-    # Step 4: Clean and Initialize Terraform
-    - name: Clean and Setup Terraform
-      run: |
-        echo "Initializing Terraform..."
-        rm -rf .terraform
-        terraform init -reconfigure
-        terraform validate
-      working-directory: terraform/
+      # Step 4: Clean and Initialize Terraform
+      - name: Clean and Setup Terraform
+        run: |
+          echo "Initializing Terraform..."
+          rm -rf .terraform
+          terraform init -reconfigure
+          terraform validate
+        working-directory: terraform/
 
-    # Step 5: Refresh Terraform State
-    - name: Refresh Terraform State
-      run: |
-        echo "Refreshing Terraform state..."
-        terraform refresh
-      working-directory: terraform/
+      # Step 5: Refresh Terraform State
+      - name: Refresh Terraform State
+        run: |
+          echo "Refreshing Terraform state..."
+          terraform refresh
+        working-directory: terraform/
 
-    # Step 6: Terraform Plan
-    - name: Terraform Plan
-      run: |
-        echo "Running Terraform Plan..."
-        terraform plan -out=tfplan
-      working-directory: terraform/
+      # Step 6: Terraform Plan
+      - name: Terraform Plan
+        run: |
+          echo "Running Terraform Plan..."
+          terraform plan -out=tfplan
+        working-directory: terraform/
 
-    # Step 7: Terraform Apply
-    - name: Terraform Apply
-      id: terraform_apply
-      run: |
-        echo "Applying Terraform changes..."
-        terraform apply -auto-approve tfplan
-      working-directory: terraform/
+      # Step 7: Terraform Apply
+      - name: Terraform Apply
+        id: terraform_apply
+        run: |
+          echo "Applying Terraform changes..."
+          terraform apply -auto-approve tfplan
+        working-directory: terraform/
 
-    # Step 8: Sync Website Files to S3
-    - name: Upload Website Files to S3
-      run: |
-        echo "Syncing files to S3 bucket..."
-        aws s3 sync ./public s3://seehmat.com \
-          --delete \
-          --acl public-read
-      working-directory: ./  # Assumes 'public' directory is at repo root.
+      # Step 8: Sync Website Files to S3
+      - name: Upload Website Files to S3
+        run: |
+          echo "Syncing files to S3 bucket..."
+          aws s3 sync ./public s3://seehmat.com --delete
+        working-directory: ./  # Assumes 'public' directory is at repo root.
 
-    # Step 9: Debug AWS CLI Permissions (Optional)
-    - name: Debug AWS CLI Permissions
-      run: |
-        echo "Testing AWS CLI access..."
-        aws s3 ls
+      # Step 9: Debug AWS CLI Permissions (Optional)
+      - name: Debug AWS CLI Permissions
+        run: |
+          echo "Testing AWS CLI access..."
+          aws s3 ls
