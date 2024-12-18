@@ -1,0 +1,10 @@
+baseURL = "http://example.com/"
+languageCode = "en-us"
+title = "My Portfolio"
+theme = "hugo-coder"
+
+[params]
+  author = "Hameed shogeyinbo"
+  description = "A cloud engineer resume"
+  github = "https://github.com/hbshogeyinbo/my-seehmat"
+  linkedin = "https://linkedin.com/in/hameed-shogeyinbo"
